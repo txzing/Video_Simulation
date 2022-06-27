@@ -69,14 +69,15 @@ module tb_vsampler();
 //////////////////////////////////////////////////////////////////////////////////
 // Image settings
 bit[31:0] height_in=640, width_in=480;
-bit[31:0] height_out=height_in, width_out = width_in/2;
+bit[31:0] height_out=height_in, width_out = width_in;
 // Clock and Reset
 bit aclk = 0, aresetn = 0;
 // 
 xil_axi_resp_t 	resp;
 // Signals corresponding to the TPG AXI4-Stream interface
 bit tready = 1, tuser, tvalid, tlast;
-bit [23:0] tdata;
+// bit [23:0] tdata;
+bit [15:0] tdata;
 
 // Test Bench variables
 integer counter_width = 0, counter_height = 0;
@@ -103,6 +104,8 @@ parameter integer tpg_base_address = 12'h000;
     parameter integer TPG_ACTIVE_W_REG      = tpg_base_address + 8'h18;
     // background_pattern_id
     parameter integer TPG_BG_PATTERN_ID_REG = tpg_base_address + 8'h20;
+    //Color Format
+    parameter integer TPG_COLOR_FORMAT_REG  = tpg_base_address + 8'h40;
 
 
 
@@ -178,6 +181,9 @@ initial begin
     //Set TPG output background ID
     master_agent.AXI4LITE_WRITE_BURST(TPG_BG_PATTERN_ID_REG,0,9,resp);
     
+    master_agent.AXI4LITE_WRITE_BURST(TPG_COLOR_FORMAT_REG,0,8'h02,resp);//YUV422
+    // master_agent.AXI4LITE_WRITE_BURST(TPG_COLOR_FORMAT_REG,0,8'h03,resp);//YUV420
+
     #200ns
     
     #20ns
@@ -208,13 +214,13 @@ end
 //
 always @(posedge aclk)
 begin
-    if((tvalid==1)&&(tready==1)) begin
-        if(tuser==1) begin
+    if(tuser && tlast) 
+    begin
             final_height =  counter_height;
             counter_height = 0;       
-        end
-        else if(tlast==1)
-            counter_height = counter_height + 1;         
+    end
+    else if(tvalid && tready && tlast) begin
+            counter_height = counter_height + 1;    
     end
 end
 //////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +245,13 @@ initial begin
                 if(tuser == 1)
                     img_start=1;
                 
-                $fwrite(output_file,"%0d\n%0d\n%0d\n",int'(tdata[23:16]),int'(tdata[7:0]),int'(tdata[15:8]));
+                // $fwrite(output_file,"%0d\n%0d\n%0d\n",int'(tdata[23:16]),int'(tdata[7:0]),int'(tdata[15:8]));
+               $fwrite(output_file,"%0d\n%0d\n",int'(tdata[7:0]),int'(tdata[15:8]));
+//8ppc rgb
+                // $fwrite(output_file,"%0d\n%0d\n%0d\n%0d\n%0d\n%0d\n",int'(tdata[23:16]),int'(tdata[7:0]),int'(tdata[15:8]),int'(tdata[47:40]),int'(tdata[31:24]),int'(tdata[39:32]));
+                // $fwrite(output_file,"%0d\n%0d\n%0d\n%0d\n%0d\n%0d\n",int'(tdata[71:64]),int'(tdata[55:48]),int'(tdata[63:56]),int'(tdata[95:88]),int'(tdata[79:72]),int'(tdata[87:80]));
+                // $fwrite(output_file,"%0d\n%0d\n%0d\n%0d\n%0d\n%0d\n",int'(tdata[119:112]),int'(tdata[103:96]),int'(tdata[111:104]),int'(tdata[143:136]),int'(tdata[127:120]),int'(tdata[135:128]));
+                // $fwrite(output_file,"%0d\n%0d\n%0d\n%0d\n%0d\n%0d\n",int'(tdata[167:160]),int'(tdata[151:144]),int'(tdata[159:152]),int'(tdata[191:184]),int'(tdata[175:168]),int'(tdata[183:176]));
             end
          end
     end

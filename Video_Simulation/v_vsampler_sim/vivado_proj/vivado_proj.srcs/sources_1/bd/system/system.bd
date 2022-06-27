@@ -1,0 +1,306 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0x96FA0D5373AC0DD6",
+      "device": "xczu2cg-sfvc784-1-e",
+      "gen_directory": "../../../../vivado_proj.gen/sources_1/bd/system",
+      "name": "system",
+      "rev_ctrl_bd_flag": "RevCtrlBdOff",
+      "synth_flow_mode": "Hierarchical",
+      "tool_version": "2020.2",
+      "validated": "true"
+    },
+    "design_tree": {
+      "axi_vip_0": "",
+      "axis_subset_converter_0": "",
+      "v_tpg_0": "",
+      "video_down_sample_0": ""
+    },
+    "ports": {
+      "aclk_50MHz": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "ASSOCIATED_RESET": {
+            "value": "aresetn_0",
+            "value_src": "default"
+          },
+          "CLK_DOMAIN": {
+            "value": "system_aclk_50MHz",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "50000000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.000",
+            "value_src": "default"
+          }
+        }
+      },
+      "aresetn_0": {
+        "type": "rst",
+        "direction": "I",
+        "parameters": {
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "POLARITY": {
+            "value": "ACTIVE_LOW",
+            "value_src": "default"
+          }
+        }
+      },
+      "tdata": {
+        "direction": "O",
+        "left": "31",
+        "right": "0"
+      },
+      "tlast": {
+        "direction": "O",
+        "left": "0",
+        "right": "0"
+      },
+      "tready": {
+        "direction": "I"
+      },
+      "tuser": {
+        "direction": "O",
+        "left": "0",
+        "right": "0"
+      },
+      "tvalid": {
+        "direction": "O"
+      }
+    },
+    "components": {
+      "axi_vip_0": {
+        "vlnv": "xilinx.com:ip:axi_vip:1.1",
+        "xci_name": "system_axi_vip_0_0",
+        "xci_path": "ip\\system_axi_vip_0_0\\system_axi_vip_0_0.xci",
+        "inst_hier_path": "axi_vip_0",
+        "parameters": {
+          "ADDR_WIDTH": {
+            "value": "12"
+          },
+          "DATA_WIDTH": {
+            "value": "32"
+          },
+          "HAS_BRESP": {
+            "value": "1"
+          },
+          "HAS_PROT": {
+            "value": "1"
+          },
+          "HAS_RRESP": {
+            "value": "1"
+          },
+          "HAS_WSTRB": {
+            "value": "1"
+          },
+          "INTERFACE_MODE": {
+            "value": "MASTER"
+          },
+          "PROTOCOL": {
+            "value": "AXI4LITE"
+          },
+          "READ_WRITE_MODE": {
+            "value": "READ_WRITE"
+          }
+        },
+        "addressing": {
+          "address_spaces": {
+            "Master_AXI": {
+              "range": "4K",
+              "width": "12"
+            }
+          }
+        },
+        "interface_ports": {
+          "M_AXI": {
+            "mode": "Master",
+            "address_space_ref": "Master_AXI",
+            "base_address": {
+              "minimum": "0x00000000",
+              "maximum": "0x00000FFF",
+              "width": "12"
+            }
+          }
+        }
+      },
+      "axis_subset_converter_0": {
+        "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
+        "xci_name": "system_axis_subset_converter_0_0",
+        "xci_path": "ip\\system_axis_subset_converter_0_0\\system_axis_subset_converter_0_0.xci",
+        "inst_hier_path": "axis_subset_converter_0",
+        "parameters": {
+          "M_TDATA_NUM_BYTES": {
+            "value": "4"
+          },
+          "S_TDATA_NUM_BYTES": {
+            "value": "6"
+          },
+          "TDATA_REMAP": {
+            "value": "tdata[7:0],tdata[7:0],tdata[7:0],tdata[7:0]"
+          }
+        }
+      },
+      "v_tpg_0": {
+        "vlnv": "xilinx.com:ip:v_tpg:8.1",
+        "xci_name": "system_v_tpg_0_0",
+        "xci_path": "ip\\system_v_tpg_0_0\\system_v_tpg_0_0.xci",
+        "inst_hier_path": "v_tpg_0",
+        "parameters": {
+          "HAS_AXI4_YUV422_YUV420": {
+            "value": "1"
+          },
+          "MAX_DATA_WIDTH": {
+            "value": "8"
+          },
+          "SAMPLES_PER_CLOCK": {
+            "value": "2"
+          }
+        },
+        "addressing": {
+          "memory_maps": {
+            "s_axi_CTRL": {
+              "address_blocks": {
+                "Reg": {
+                  "base_address": "0",
+                  "range": "64K",
+                  "width": "16",
+                  "usage": "register",
+                  "offset_base_param": "C_S_AXI_CTRL_BASEADDR",
+                  "offset_high_param": "C_S_AXI_CTRL_HIGHADDR"
+                }
+              }
+            }
+          }
+        },
+        "interface_ports": {
+          "s_axi_CTRL": {
+            "mode": "Slave",
+            "memory_map_ref": "s_axi_CTRL"
+          }
+        }
+      },
+      "video_down_sample_0": {
+        "vlnv": "xilinx.com:user:video_down_sample:2.0",
+        "xci_name": "system_video_down_sample_0_0",
+        "xci_path": "ip\\system_video_down_sample_0_0\\system_video_down_sample_0_0.xci",
+        "inst_hier_path": "video_down_sample_0",
+        "parameters": {
+          "COLUMN_DOWN": {
+            "value": "false"
+          },
+          "LINE_DOWN": {
+            "value": "false"
+          },
+          "MAXIMUM_DATA_WIDTH": {
+            "value": "8"
+          },
+          "SAMPLES_PER_CLOCK": {
+            "value": "2"
+          },
+          "VIDEO_FORMAT": {
+            "value": "2"
+          }
+        }
+      }
+    },
+    "interface_nets": {
+      "axis_subset_converter_0_M_AXIS": {
+        "interface_ports": [
+          "axis_subset_converter_0/M_AXIS",
+          "video_down_sample_0/s_axis"
+        ]
+      },
+      "v_tpg_0_m_axis_video": {
+        "interface_ports": [
+          "axis_subset_converter_0/S_AXIS",
+          "v_tpg_0/m_axis_video"
+        ]
+      },
+      "axi_vip_0_M_AXI": {
+        "interface_ports": [
+          "axi_vip_0/M_AXI",
+          "v_tpg_0/s_axi_CTRL"
+        ]
+      }
+    },
+    "nets": {
+      "aclk_0_1": {
+        "ports": [
+          "aclk_50MHz",
+          "axi_vip_0/aclk",
+          "axis_subset_converter_0/aclk",
+          "v_tpg_0/ap_clk",
+          "video_down_sample_0/aclk"
+        ]
+      },
+      "aresetn_0_1": {
+        "ports": [
+          "aresetn_0",
+          "axi_vip_0/aresetn",
+          "axis_subset_converter_0/aresetn",
+          "v_tpg_0/ap_rst_n",
+          "video_down_sample_0/aresetn"
+        ]
+      },
+      "tready_1": {
+        "ports": [
+          "tready",
+          "video_down_sample_0/m_axis_tready"
+        ]
+      },
+      "video_down_sample_0_m_axis_tdata": {
+        "ports": [
+          "video_down_sample_0/m_axis_tdata",
+          "tdata"
+        ]
+      },
+      "video_down_sample_0_m_axis_tlast": {
+        "ports": [
+          "video_down_sample_0/m_axis_tlast",
+          "tlast"
+        ]
+      },
+      "video_down_sample_0_m_axis_tuser": {
+        "ports": [
+          "video_down_sample_0/m_axis_tuser",
+          "tuser"
+        ]
+      },
+      "video_down_sample_0_m_axis_tvalid": {
+        "ports": [
+          "video_down_sample_0/m_axis_tvalid",
+          "tvalid"
+        ]
+      }
+    },
+    "addressing": {
+      "/axi_vip_0": {
+        "address_spaces": {
+          "Master_AXI": {
+            "segments": {
+              "SEG_v_tpg_0_Reg": {
+                "address_block": "/v_tpg_0/s_axi_CTRL/Reg",
+                "offset": "0x000",
+                "range": "4K"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

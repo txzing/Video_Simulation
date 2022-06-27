@@ -124,6 +124,7 @@ set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
 xilinx.com:ip:axi_vip:1.1\
+xilinx.com:ip:axis_subset_converter:1.1\
 xilinx.com:ip:v_tpg:8.1\
 xilinx.com:user:video_down_sample:2.0\
 "
@@ -193,7 +194,7 @@ proc create_root_design { parentCell } {
   # Create ports
   set aclk_50MHz [ create_bd_port -dir I -type clk -freq_hz 50000000 aclk_50MHz ]
   set aresetn_0 [ create_bd_port -dir I -type rst aresetn_0 ]
-  set tdata [ create_bd_port -dir O -from 23 -to 0 tdata ]
+  set tdata [ create_bd_port -dir O -from 31 -to 0 tdata ]
   set tlast [ create_bd_port -dir O -from 0 -to 0 tlast ]
   set tready [ create_bd_port -dir I tready ]
   set tuser [ create_bd_port -dir O -from 0 -to 0 tuser ]
@@ -227,29 +228,40 @@ proc create_root_design { parentCell } {
    CONFIG.WUSER_WIDTH {0} \
  ] $axi_vip_0
 
+  # Create instance: axis_subset_converter_0, and set properties
+  set axis_subset_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_subset_converter:1.1 axis_subset_converter_0 ]
+  set_property -dict [ list \
+   CONFIG.M_TDATA_NUM_BYTES {4} \
+   CONFIG.S_TDATA_NUM_BYTES {6} \
+   CONFIG.TDATA_REMAP {tdata[7:0],tdata[7:0],tdata[7:0],tdata[7:0]} \
+ ] $axis_subset_converter_0
+
   # Create instance: v_tpg_0, and set properties
   set v_tpg_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:v_tpg:8.1 v_tpg_0 ]
   set_property -dict [ list \
+   CONFIG.HAS_AXI4_YUV422_YUV420 {1} \
    CONFIG.MAX_DATA_WIDTH {8} \
-   CONFIG.SAMPLES_PER_CLOCK {1} \
+   CONFIG.SAMPLES_PER_CLOCK {2} \
  ] $v_tpg_0
 
   # Create instance: video_down_sample_0, and set properties
   set video_down_sample_0 [ create_bd_cell -type ip -vlnv xilinx.com:user:video_down_sample:2.0 video_down_sample_0 ]
   set_property -dict [ list \
-   CONFIG.COLUMN_DOWN {true} \
+   CONFIG.COLUMN_DOWN {false} \
    CONFIG.LINE_DOWN {false} \
    CONFIG.MAXIMUM_DATA_WIDTH {8} \
-   CONFIG.SAMPLES_PER_CLOCK {1} \
+   CONFIG.SAMPLES_PER_CLOCK {2} \
+   CONFIG.VIDEO_FORMAT {2} \
  ] $video_down_sample_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_vip_0_M_AXI [get_bd_intf_pins axi_vip_0/M_AXI] [get_bd_intf_pins v_tpg_0/s_axi_CTRL]
-  connect_bd_intf_net -intf_net v_tpg_0_m_axis_video [get_bd_intf_pins v_tpg_0/m_axis_video] [get_bd_intf_pins video_down_sample_0/s_axis]
+  connect_bd_intf_net -intf_net axis_subset_converter_0_M_AXIS [get_bd_intf_pins axis_subset_converter_0/M_AXIS] [get_bd_intf_pins video_down_sample_0/s_axis]
+  connect_bd_intf_net -intf_net v_tpg_0_m_axis_video [get_bd_intf_pins axis_subset_converter_0/S_AXIS] [get_bd_intf_pins v_tpg_0/m_axis_video]
 
   # Create port connections
-  connect_bd_net -net aclk_0_1 [get_bd_ports aclk_50MHz] [get_bd_pins axi_vip_0/aclk] [get_bd_pins v_tpg_0/ap_clk] [get_bd_pins video_down_sample_0/aclk]
-  connect_bd_net -net aresetn_0_1 [get_bd_ports aresetn_0] [get_bd_pins axi_vip_0/aresetn] [get_bd_pins v_tpg_0/ap_rst_n] [get_bd_pins video_down_sample_0/aresetn]
+  connect_bd_net -net aclk_0_1 [get_bd_ports aclk_50MHz] [get_bd_pins axi_vip_0/aclk] [get_bd_pins axis_subset_converter_0/aclk] [get_bd_pins v_tpg_0/ap_clk] [get_bd_pins video_down_sample_0/aclk]
+  connect_bd_net -net aresetn_0_1 [get_bd_ports aresetn_0] [get_bd_pins axi_vip_0/aresetn] [get_bd_pins axis_subset_converter_0/aresetn] [get_bd_pins v_tpg_0/ap_rst_n] [get_bd_pins video_down_sample_0/aresetn]
   connect_bd_net -net tready_1 [get_bd_ports tready] [get_bd_pins video_down_sample_0/m_axis_tready]
   connect_bd_net -net video_down_sample_0_m_axis_tdata [get_bd_ports tdata] [get_bd_pins video_down_sample_0/m_axis_tdata]
   connect_bd_net -net video_down_sample_0_m_axis_tlast [get_bd_ports tlast] [get_bd_pins video_down_sample_0/m_axis_tlast]
@@ -263,7 +275,6 @@ proc create_root_design { parentCell } {
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -275,4 +286,6 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
