@@ -1,4 +1,8 @@
 module  VIP_Matrix_Generate_3X3_8Bit
+#(
+	parameter	IMG_HDISP = 640,	//640*480
+	parameter	IMG_VDISP = 480
+)
 (
     input            clk,  
     input            rst_n,
@@ -55,7 +59,12 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 //用于存储列数据的RAM
-line_shift_RAM_8bit  u_Line_Shift_RAM_8Bit
+line_shift_RAM_8bit  
+ #(
+	.IMG_HDISP	(IMG_HDISP),	 
+	.IMG_VDISP	(IMG_VDISP)
+)
+u_Line_Shift_RAM_8Bit
 (
     .clock          (clk),
     .clken          (pre_frame_clken),

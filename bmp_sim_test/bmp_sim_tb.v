@@ -335,7 +335,7 @@ VIP_Sobel_Edge_Detector #(
 	.post_img_Bit			(post2_img_Bit    ),		
 	
 	//User interface
-	.Sobel_Threshold		(128)					
+	.Sobel_Threshold		(8'd128)					
 );
 
 
