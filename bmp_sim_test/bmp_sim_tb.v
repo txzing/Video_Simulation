@@ -4,12 +4,16 @@ module bmp_tb;
 
 //图片的分辨率,参数不指定位宽情况下默认32位
 //不同的图片根据其格式修改此处
-parameter  IMG_HDISP 		= 4032;
-parameter  IMG_VDISP 		= 3024;
-parameter  FILE_PATH		= "./PIC/test_2.bmp";
-parameter  OUTPUT_BMP		= "./PIC/test_2_out.bmp";
-parameter  OUTPUT_TXT		= "./PIC/test_2_out.txt";
+parameter  IMG_HDISP 		= 400;
+parameter  IMG_VDISP 		= 400;
+parameter  FILE_PATH		= "./PIC/test_1.bmp";
+parameter  OUTPUT_BMP		= "./PIC/test_1_out.bmp";
 
+// `define  WRITE_TXT
+
+`ifdef WRITE_TXT
+parameter  OUTPUT_TXT		= "./PIC/test_1_out.txt";
+`endif
 //
 parameter  BMP_HEAD  		= 54;
 parameter  BMP_DATA  		= IMG_HDISP*IMG_VDISP*3;//24位深图片
@@ -59,7 +63,14 @@ initial begin
     // 分别打开 输入/输出BMP图片，以及输出的Txt文本，相对路劲
 	iBmpFileId = $fopen(FILE_PATH,"rb");
 	oBmpFileId = $fopen(OUTPUT_BMP,"wb+");
+
+`ifdef WRITE_TXT
 	oTxtFileId = $fopen(OUTPUT_TXT,"w+");
+	//将数组中的数据写到输出Txt文本中
+	$fwrite(oTxtFileId,"%p",rBmpData);
+    //关闭Txt文本
+    $fclose(oTxtFileId);
+`endif
 
 	$display("PIC_TOTAL_SIZE is %d\n",PIC_TOTAL_SIZE);
 
@@ -71,16 +82,10 @@ initial begin
 	iBmpHight       = {rBmpData[25],rBmpData[24],rBmpData[23],rBmpData[22]};
 	iBmpSize        = {rBmpData[ 5],rBmpData[ 4],rBmpData[ 3],rBmpData[ 2]};
 	iDataStartIndex = {rBmpData[13],rBmpData[12],rBmpData[11],rBmpData[10]};
-    
+
     //关闭输入BMP图片
 	$fclose(iBmpFileId);
     
-    //将数组中的数据写到输出Txt文本中
-	$fwrite(oTxtFileId,"%p",rBmpData);
-    //关闭Txt文本
-    $fclose(oTxtFileId);
-
-
     #(5*CYCLE_TIME);
     rst_n   = 1'b1;
 	$display("start \n");     
@@ -185,7 +190,6 @@ always@(posedge clk or negedge rst_n) begin
 end
 assign	cmos_vsync	= cmos_vsync_r;
 
-
 //---------------------------------------------
 //Image data href vaild  signal
 wire	frame_valid_ahead =  ( vcnt >= V_SYNC + V_BACK  && vcnt < V_SYNC + V_BACK + V_DISP
@@ -236,20 +240,21 @@ end
 //-------------------------------------
 //VIP算法——彩色转灰度
 
-wire 		per_frame_vsync	=	cmos_vsync ;	
-wire 		per_frame_href	=	cmos_href;	
-wire 		per_frame_clken	=	cmos_clken;	
-wire [7:0]	per_img_red		=	cmos_data[23:16];	   	
-wire [7:0]	per_img_green	=	cmos_data[15: 8];   	            
-wire [7:0]	per_img_blue	=	cmos_data[ 7: 0];   	            
+wire 		pre_frame_vsync	=	cmos_vsync ;	
+wire 		pre_frame_href	=	cmos_href;	
+wire 		pre_frame_clken	=	cmos_clken;	
+wire [7:0]	pre_img_red		=	cmos_data[23:16];	   	
+wire [7:0]	pre_img_green	=	cmos_data[15: 8];   	            
+wire [7:0]	pre_img_blue	=	cmos_data[ 7: 0];   	            
 
 
-wire 		post0_frame_vsync;   
-wire 		post0_frame_href ;   
-wire 		post0_frame_clken;    
-wire [7:0]	post0_img_Y      ;   
-wire [7:0]	post0_img_Cb     ;   
-wire [7:0]	post0_img_Cr     ;   
+wire 		post0_image_vsync	;   
+wire 		post0_data_valid 	;   
+wire 		post0_image_clken	;    
+wire [7:0]	post0_image_data    ;   
+wire [7:0]	post0_img_Cb     	;   
+wire [7:0]	post0_img_Cr     	;  
+
 
 VIP_RGB888_YCbCr444	u_VIP_RGB888_YCbCr444
 (
@@ -258,29 +263,57 @@ VIP_RGB888_YCbCr444	u_VIP_RGB888_YCbCr444
 	.rst_n				(rst_n),				//system reset
 
 	//Image data prepred to be processd
-	.per_frame_vsync	(per_frame_vsync),		//Prepared Image data vsync valid signal
-	.per_frame_href		(per_frame_href),		//Prepared Image data href vaild  signal
-	.per_frame_clken	(per_frame_clken),		//Prepared Image data output/capture enable clock
-	.per_img_red		(per_img_red),			//Prepared Image red data input
-	.per_img_green		(per_img_green),		//Prepared Image green data input
-	.per_img_blue		(per_img_blue),			//Prepared Image blue data input
+	.pre_frame_vsync	(pre_frame_vsync),		//Prepared Image data vsync valid signal
+	.pre_frame_href		(pre_frame_href),		//Prepared Image data href vaild  signal
+	.pre_frame_clken	(pre_frame_clken),		//Prepared Image data output/capture enable clock
+	.pre_img_red		(pre_img_red),			//Prepared Image red data input
+	.pre_img_green		(pre_img_green),		//Prepared Image green data input
+	.pre_img_blue		(pre_img_blue),			//Prepared Image blue data input
 	
 	//Image data has been processd
-	.post_frame_vsync	(post0_frame_vsync),		//Processed Image frame data valid signal
-	.post_frame_href	(post0_frame_href),		//Processed Image hsync data valid signal
-	.post_frame_clken	(post0_frame_clken),		//Processed Image data output/capture enable clock
-	.post_img_Y			(post0_img_Y),			//Processed Image brightness output
+	.post_frame_vsync	(post0_image_vsync),		//Processed Image frame data valid signal
+	.post_frame_href	(post0_data_valid ),		//Processed Image hsync data valid signal
+	.post_frame_clken	(post0_image_clken),		//Processed Image data output/capture enable clock
+	.post_img_Y			(post0_image_data ),			//Processed Image brightness output
 	.post_img_Cb		(post0_img_Cb),			//Processed Image blue shading output
 	.post_img_Cr		(post0_img_Cr)			//Processed Image red shading output
 );
 
 //--------------------------------------
+//VIP 算法——中值滤波模块
+wire 		post1_image_vsync  	;
+wire 		post1_data_valid   	;
+wire 		post1_image_clken  	;
+wire [7:0]	post1_image_data   	;
+
+gray_median_filter #(
+	.IMG_HDISP	(IMG_HDISP),	 
+	.IMG_VDISP	(IMG_VDISP)
+) u_gray_median_filter(
+    .clk            (clk),  
+    .rst_n          (rst_n),
+
+//预处理图像
+    .pre_gray_vsync (post0_image_vsync),
+    .pre_gray_valid (post0_data_valid ),
+    .pre_gray_clken (post0_image_clken),
+    .pre_gray_data  (post0_image_data ),
+
+//处理后图像
+    .post_gray_vsync (post1_image_vsync),
+    .post_gray_valid (post1_data_valid ),
+    .post_gray_clken (post1_image_clken),
+    .post_pixel_data (post1_image_data )
+);
+
+
+//--------------------------------------
 //VIP 算法——Sobel边缘检测
 
-wire			post1_frame_vsync;	 
-wire			post1_frame_href;	 
-wire			post1_frame_clken;	 
-wire			post1_img_Bit;		 
+wire			post2_frame_vsync;	 
+wire			post2_frame_href;	 
+wire			post2_frame_clken;	 
+wire			post2_img_Bit;		 
 
 VIP_Sobel_Edge_Detector #(
 	.IMG_HDISP	(IMG_HDISP),	 
@@ -290,16 +323,16 @@ VIP_Sobel_Edge_Detector #(
 	.rst_n					(rst_n),				
 
 	//Image data prepred to be processd
-	.per_frame_vsync		(post0_frame_vsync),	
-	.per_frame_href			(post0_frame_href),		
-	.per_frame_clken		(post0_frame_clken),	
-	.per_img_Y				(post0_img_Y),			
+	.pre_frame_vsync		(post0_image_vsync),	
+	.pre_frame_href			(post0_data_valid ),		
+	.pre_frame_clken		(post0_image_clken),	
+	.pre_img_Y				(post0_image_data ),			
 
 	//Image data has been processd
-	.post_frame_vsync		(post1_frame_vsync),	
-	.post_frame_href		(post1_frame_href),		
-	.post_frame_clken		(post1_frame_clken),	
-	.post_img_Bit			(post1_img_Bit),		
+	.post_frame_vsync		(post2_frame_vsync),	
+	.post_frame_href		(post2_frame_href ),		
+	.post_frame_clken		(post2_frame_clken),	
+	.post_img_Bit			(post2_img_Bit    ),		
 	
 	//User interface
 	.Sobel_Threshold		(128)					
@@ -317,12 +350,23 @@ wire [7:0]	vip_out_img_R     ;
 wire [7:0]	vip_out_img_G     ;   
 wire [7:0]	vip_out_img_B     ;  
 
-assign vip_out_frame_vsync = post1_frame_vsync;   
-assign vip_out_frame_href  = post1_frame_href ;   
-assign vip_out_frame_clken = post1_frame_clken;    
-assign vip_out_img_R       = {8{post1_img_Bit}};   
-assign vip_out_img_G       = {8{post1_img_Bit}};   
-assign vip_out_img_B       = {8{post1_img_Bit}};  
+//输出median
+// assign vip_out_frame_vsync = post1_image_vsync;   
+// assign vip_out_frame_href  = post1_data_valid ;   
+// assign vip_out_frame_clken = post1_image_clken;    
+// assign vip_out_img_R       = post1_image_data;   
+// assign vip_out_img_G       = post1_image_data;   
+// assign vip_out_img_B       = post1_image_data;  
+
+//输出sobel
+assign vip_out_frame_vsync = post2_frame_vsync;   
+assign vip_out_frame_href  = post2_frame_href ;   
+assign vip_out_frame_clken = post2_frame_clken;    
+assign vip_out_img_R       = {8{post2_img_Bit}};   
+assign vip_out_img_G       = {8{post2_img_Bit}};   
+assign vip_out_img_B       = {8{post2_img_Bit}};  
+
+
 
 reg [31:0] vip_cnt;
  
@@ -332,13 +376,13 @@ always@(posedge clk or negedge rst_n)begin
    if(!rst_n) 
         vip_vsync_r   <=  1'b0;
    else 
-        vip_vsync_r   <=  post0_frame_vsync;
+        vip_vsync_r   <=  post0_image_vsync;
 end
 
 always@(posedge clk or negedge rst_n)begin
    if(!rst_n) 
         vip_out_en    <=  1'b1;
-   else if(vip_vsync_r & (!post0_frame_vsync))  //第一帧结束之后，使能拉低
+   else if(vip_vsync_r & (!post0_image_vsync))  //第一帧结束之后，使能拉低
         vip_out_en    <=  1'b0;
 end
 

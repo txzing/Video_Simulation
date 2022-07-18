@@ -101,7 +101,7 @@ endmodule
 // Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: PRIVATE: NUMBER_OF_TAPS NUMERIC "2"
 // Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "1"
-// Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
+// Retrieval info: PRIVATE: SYNTH_WRAPpre_GEN_POSTFIX STRING "0"
 // Retrieval info: PRIVATE: TAP_DISTANCE NUMERIC "640"
 // Retrieval info: PRIVATE: WIDTH NUMERIC "8"
 // Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all

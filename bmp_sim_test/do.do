@@ -13,6 +13,7 @@ vlog altera_mf.v
                                                           
 #编译被仿真文件                                                                               
 vlog  ./VIP/*.v   
+vlog  ./VIP/median/*.v   
 vlog  ./VIP/sobel/*.v   
      
                                                                          

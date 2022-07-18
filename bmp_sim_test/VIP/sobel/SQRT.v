@@ -74,7 +74,7 @@ endmodule
 // CNX file retrieval info
 // ============================================================
 // Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
-// Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
+// Retrieval info: PRIVATE: SYNTH_WRAPpre_GEN_POSTFIX STRING "0"
 // Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 // Retrieval info: CONSTANT: PIPELINE NUMERIC "0"
 // Retrieval info: CONSTANT: Q_PORT_WIDTH NUMERIC "11"

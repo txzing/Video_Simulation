@@ -42,10 +42,10 @@ module VIP_Matrix_Generate_3X3_8Bit
 	input				rst_n,				//global reset
 
 	//Image data prepred to be processd
-	input				per_frame_vsync,	//Prepared Image data vsync valid signal
-	input				per_frame_href,		//Prepared Image data href vaild  signal
-	input				per_frame_clken,	//Prepared Image data output/capture enable clock
-	input		[7:0]	per_img_Y,			//Prepared Image brightness input
+	input				pre_frame_vsync,	//Prepared Image data vsync valid signal
+	input				pre_frame_href,		//Prepared Image data href vaild  signal
+	input				pre_frame_clken,	//Prepared Image data output/capture enable clock
+	input		[7:0]	pre_img_Y,			//Prepared Image brightness input
 
 	//Image data has been processd
 	output				matrix_frame_vsync,	//Prepared Image data vsync valid signal
@@ -61,7 +61,7 @@ module VIP_Matrix_Generate_3X3_8Bit
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
-//sync row3_data with per_frame_clken & row1_data & raw2_data
+//sync row3_data with pre_frame_clken & row1_data & raw2_data
 wire	[7:0]	row1_data;	//frame data of the 1th row
 wire	[7:0]	row2_data;	//frame data of the 2th row
 reg		[7:0]	row3_data;	//frame data of the 3th row
@@ -71,8 +71,8 @@ begin
 		row3_data <= 0;
 	else 
 		begin
-		if(per_frame_clken)
-			row3_data <= per_img_Y;
+		if(pre_frame_clken)
+			row3_data <= pre_img_Y;
 		else
 			row3_data <= row3_data;
 		end	
@@ -80,7 +80,7 @@ end
 
 //---------------------------------------
 //module of shift ram for raw data
-wire	shift_clk_en = per_frame_clken;
+wire	shift_clk_en = pre_frame_clken;
 Line_Shift_RAM_8Bit 
 #(
 	.RAM_Length	(IMG_HDISP)
@@ -99,31 +99,31 @@ u_Line_Shift_RAM_8Bit
 
 //------------------------------------------
 //lag 2 clocks signal sync  
-reg	[1:0]	per_frame_vsync_r;
-reg	[1:0]	per_frame_href_r;	
-reg	[1:0]	per_frame_clken_r;
+reg	[1:0]	pre_frame_vsync_r;
+reg	[1:0]	pre_frame_href_r;	
+reg	[1:0]	pre_frame_clken_r;
 always@(posedge clk or negedge rst_n)
 begin
 	if(!rst_n)
 		begin
-		per_frame_vsync_r <= 0;
-		per_frame_href_r <= 0;
-		per_frame_clken_r <= 0;
+		pre_frame_vsync_r <= 0;
+		pre_frame_href_r <= 0;
+		pre_frame_clken_r <= 0;
 		end
 	else
 		begin
-		per_frame_vsync_r 	<= 	{per_frame_vsync_r[0], 	per_frame_vsync};
-		per_frame_href_r 	<= 	{per_frame_href_r[0], 	per_frame_href};
-		per_frame_clken_r 	<= 	{per_frame_clken_r[0], 	per_frame_clken};
+		pre_frame_vsync_r 	<= 	{pre_frame_vsync_r[0], 	pre_frame_vsync};
+		pre_frame_href_r 	<= 	{pre_frame_href_r[0], 	pre_frame_href};
+		pre_frame_clken_r 	<= 	{pre_frame_clken_r[0], 	pre_frame_clken};
 		end
 end
 //Give up the 1th and 2th row edge data caculate for simple process
 //Give up the 1th and 2th point of 1 line for simple process
-wire	read_frame_href		=	per_frame_href_r[0];	//RAM read href sync signal
-wire	read_frame_clken	=	per_frame_clken_r[0];	//RAM read enable
-assign	matrix_frame_vsync 	= 	per_frame_vsync_r[1];
-assign	matrix_frame_href 	= 	per_frame_href_r[1];
-assign	matrix_frame_clken 	= 	per_frame_clken_r[1];
+wire	read_frame_href		=	pre_frame_href_r[0];	//RAM read href sync signal
+wire	read_frame_clken	=	pre_frame_clken_r[0];	//RAM read enable
+assign	matrix_frame_vsync 	= 	pre_frame_vsync_r[1];
+assign	matrix_frame_href 	= 	pre_frame_href_r[1];
+assign	matrix_frame_clken 	= 	pre_frame_clken_r[1];
 
 
 //----------------------------------------------------------------------------

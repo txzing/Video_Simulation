@@ -42,10 +42,10 @@ module VIP_Sobel_Edge_Detector
 	input				rst_n,				//global reset
 
 	//Image data prepred to be processd
-	input				per_frame_vsync,	//Prepared Image data vsync valid signal
-	input				per_frame_href,		//Prepared Image data href vaild  signal
-	input				per_frame_clken,	//Prepared Image data output/capture enable clock
-	input		[7:0]	per_img_Y,			//Prepared Image brightness input
+	input				pre_frame_vsync,	//Prepared Image data vsync valid signal
+	input				pre_frame_href,		//Prepared Image data href vaild  signal
+	input				pre_frame_clken,	//Prepared Image data output/capture enable clock
+	input		[7:0]	pre_img_Y,			//Prepared Image brightness input
 	
 	//Image data has been processd
 	output				post_frame_vsync,	//Processed Image data vsync valid signal
@@ -78,10 +78,10 @@ u_VIP_Matrix_Generate_3X3_8Bit
 	.rst_n					(rst_n),				//global reset
 
 	//Image data prepred to be processd
-	.per_frame_vsync		(per_frame_vsync),		//Prepared Image data vsync valid signal
-	.per_frame_href			(per_frame_href),		//Prepared Image data href vaild  signal
-	.per_frame_clken		(per_frame_clken),		//Prepared Image data output/capture enable clock
-	.per_img_Y				(per_img_Y),			//Prepared Image brightness input
+	.pre_frame_vsync		(pre_frame_vsync),		//Prepared Image data vsync valid signal
+	.pre_frame_href			(pre_frame_href),		//Prepared Image data href vaild  signal
+	.pre_frame_clken		(pre_frame_clken),		//Prepared Image data output/capture enable clock
+	.pre_img_Y				(pre_img_Y),			//Prepared Image brightness input
 
 	//Image data has been processd
 	.matrix_frame_vsync		(matrix_frame_vsync),	//Processed Image data vsync valid signal
@@ -190,27 +190,27 @@ end
 
 //------------------------------------------
 //lag 5 clocks signal sync  
-reg	[4:0]	per_frame_vsync_r;
-reg	[4:0]	per_frame_href_r;	
-reg	[4:0]	per_frame_clken_r;
+reg	[4:0]	pre_frame_vsync_r;
+reg	[4:0]	pre_frame_href_r;	
+reg	[4:0]	pre_frame_clken_r;
 always@(posedge clk or negedge rst_n)
 begin
 	if(!rst_n)
 		begin
-		per_frame_vsync_r <= 0;
-		per_frame_href_r <= 0;
-		per_frame_clken_r <= 0;
+		pre_frame_vsync_r <= 0;
+		pre_frame_href_r <= 0;
+		pre_frame_clken_r <= 0;
 		end
 	else
 		begin
-		per_frame_vsync_r 	<= 	{per_frame_vsync_r[3:0], 	matrix_frame_vsync};
-		per_frame_href_r 	<= 	{per_frame_href_r[3:0], 	matrix_frame_href};
-		per_frame_clken_r 	<= 	{per_frame_clken_r[3:0], 	matrix_frame_clken};
+		pre_frame_vsync_r 	<= 	{pre_frame_vsync_r[3:0], 	matrix_frame_vsync};
+		pre_frame_href_r 	<= 	{pre_frame_href_r[3:0], 	matrix_frame_href};
+		pre_frame_clken_r 	<= 	{pre_frame_clken_r[3:0], 	matrix_frame_clken};
 		end
 end
-assign	post_frame_vsync 	= 	per_frame_vsync_r[4];
-assign	post_frame_href 	= 	per_frame_href_r[4];
-assign	post_frame_clken 	= 	per_frame_clken_r[4];
+assign	post_frame_vsync 	= 	pre_frame_vsync_r[4];
+assign	post_frame_href 	= 	pre_frame_href_r[4];
+assign	post_frame_clken 	= 	pre_frame_clken_r[4];
 assign	post_img_Bit		=	post_frame_href ? post_img_Bit_r : 1'b0;
 
 endmodule
